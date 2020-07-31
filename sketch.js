@@ -2,6 +2,7 @@ let player;
 let aliens = [];
 let bullets = [];
 let alienBullets = [];
+let bossBullets = [];
 let alienImage;
 let playerImage;
 let backgroundImage;
@@ -21,6 +22,8 @@ let myStorage = window.localStorage;
 let playerSpeed = 1.5;
 let bulletSpeed = 4;
 let money = 0;
+let boss;
+let showBoss = false;
 
 function getHighscore() {
   return myStorage.getItem("Highscore");
@@ -136,6 +139,24 @@ function deleteCharacters() {
   }
 }
 
+function drawBoss() {
+  if (showBoss) {
+    boss.show();
+    boss.update();
+    if (boss.haveCollided()) {
+      boss.turning();
+    }
+
+    if (boss.isDead()) {
+      showBoss = false;
+      level++;
+      money++;
+      showUpgrademeny = true;
+      setupAliens();
+    }
+  }
+}
+
 function draw() {
 
   if (meny) {
@@ -166,7 +187,10 @@ function draw() {
     if (player.isHit()) {
       lives--;
       alienBullets = [];
-      setupAliens();
+      if (!showBoss) {
+        setupAliens();
+      }
+
       if (lives <= 0) {
         gameover = true;
         level = 1;
@@ -194,11 +218,11 @@ function draw() {
 
     setHighscore();
 
-    if (aliens.length == 0) {
-      level++;
-      money++;
-      showUpgrademeny = true;
-      setupAliens();
+    drawBoss();
+
+    if (aliens.length == 0 && showBoss == false) {
+      boss = new Boss(200, 0);
+      showBoss = true;
     }
 
 
