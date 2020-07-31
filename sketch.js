@@ -6,14 +6,21 @@ let alienImage;
 let playerImage;
 let backgroundImage;
 let boomImage;
-let menyImage
+let menyImage;
+let upgrademenyImage;
+let bossImage;
 let gameover = false;
 let boom = false;
+let showUpgrademeny = false;
 let score = 0;
 let level = 1;
 let lives = 3;
+let numBullets = 1;
 let meny = true;
 let myStorage = window.localStorage;
+let playerSpeed = 1.5;
+let bulletSpeed = 4;
+let money = 0;
 
 function getHighscore() {
   return myStorage.getItem("Highscore");
@@ -32,6 +39,8 @@ function preload() {
   backgroundImage = loadImage(backgroundPng);
   boomImage = loadImage(boomPng);
   menyImage = loadImage(menyPng);
+  upgrademenyImage = loadImage(upgrademenyPng);
+  bossImage = loadImage(bossPng);
 }
 
 function setup() {
@@ -44,7 +53,7 @@ function setupAliens() {
   aliens = [];
   alienBullets = [];
   gameover = false;
-  for (let index = 0; index < 8; index++) {
+  for (let index = 0; index < 7; index++) {
     for (let rad = 0; rad < 6; rad++) {
       aliens.push(new Alien(25 + index * 35, 50 + rad * 25));
     }
@@ -133,6 +142,13 @@ function draw() {
     image(menyImage, 0, 0)
   }else if (gameover) {
     image(backgroundImage, 0, 0)
+  }else if (showUpgrademeny) {
+    image(upgrademenyImage, 0, 0)
+    fill(255)
+    text("Money: " + money, 10, 356);
+    text("Bullet speed: " , 50, 190);
+    text("Bullets: " , 178, 186);
+    text("Player speed: " , 312, 189);
   } else if (boom) {
     image(boomImage, 0, 0)
     setTimeout(function() {
@@ -174,10 +190,14 @@ function draw() {
     text("level: " + level, 10, 40);
     text("Highscore: " + getHighscore(), 10, 60);
     text("lives: " + lives, 10, 80);
+    text("money: " + money, 10, 100);
+
     setHighscore();
 
     if (aliens.length == 0) {
       level++;
+      money++;
+      showUpgrademeny = true;
       setupAliens();
     }
 
@@ -188,11 +208,11 @@ function draw() {
 
 function keyPressed() {
   if (keyCode === LEFT_ARROW) {
-    player.setSpeed(-3);
+    player.setSpeed(playerSpeed * -1);
   }
 
   if (keyCode === RIGHT_ARROW) {
-    player.setSpeed(3);
+    player.setSpeed(playerSpeed);
   }
 
   if (keyCode === DOWN_ARROW) {
@@ -200,12 +220,39 @@ function keyPressed() {
   }
 
   if (key === ' ') {
-    if (bullets.length <= 7) {
-      bullets.push(new Bullet(player.pos.x + 12, player.pos.y, 4));
+    if (bullets.length <= 25) {
+      for (let index = 0; index < numBullets; index++) {
+        bullets.push(new Bullet(player.pos.x + 12 + index * 5, player.pos.y, bulletSpeed));
+      }
     }
   }
 
   if (meny) {
     meny = false;
+  }
+}
+
+function mousePressed() {
+  console.log(mouseX + ", " + mouseY)
+  if (showUpgrademeny) {
+
+    if (money > 1 && mouseX > 9 && mouseX < 90 && mouseY > 90 && mouseY < 170) {
+      bulletSpeed += 0.8;
+      money--;
+    }
+
+    if (money > 3 && mouseX > 138 && mouseX < 220 && mouseY > 92 && mouseY < 177) {
+      numBullets++;
+      money--;
+    }
+
+    if (money > 2 && mouseX > 275 && mouseX < 356 && mouseY > 94 && mouseY < 178) {
+      playerSpeed += 0.5;
+      money--;
+    }
+
+    if (mouseX > 99 && mouseX < 175 && mouseY > 326 && mouseY < 355) {
+      showUpgrademeny = false;
+    }
   }
 }
